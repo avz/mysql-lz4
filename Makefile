@@ -20,7 +20,7 @@ lz4.o: deps/lz4-r127/lib/lz4.c
 	$(CC) -c -fPIC -std=c90 -g -Wall -Wconversion -D_DEFAULT_SOURCE $(CFLAGS) src/$*.c
 
 clean:
-	rm -f *.o *.so.*
+	rm -f *.o *.so
 
 install: build
 	install mysql-lz4.so "`mysql_config --plugindir`"
