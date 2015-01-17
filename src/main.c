@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 #include "../deps/lz4-r127/lib/lz4.h"
 
@@ -51,17 +51,21 @@ char *LZ4_COMPRESS(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long
 		return NULL;
 	}
 
-	buf = malloc(maxLength);
+	if(initid->ptr) {
+		buf = realloc(initid->ptr, maxLength);
+	} else {
+		buf = malloc(maxLength);
+	}
+
+	initid->ptr = buf;
 
 	realLength = (size_t)LZ4_compress(args->args[0], buf, (int)args->lengths[0]);
 
 	if(!realLength) {
 		*error = 1;
-		free(buf);
 		return NULL;
 	}
 
-	initid->ptr = buf;
 	*length = realLength;
 
 	return buf;
@@ -117,17 +121,21 @@ char *LZ4_DECOMPRESS(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned lo
 		return NULL;
 	}
 
-	buf = malloc(maxLength);
+	if(initid->ptr) {
+		buf = realloc(initid->ptr, maxLength);
+	} else {
+		buf = malloc(maxLength);
+	}
+
+	initid->ptr = buf;
 
 	realLength = LZ4_decompress_safe(args->args[0], buf, (int)args->lengths[0], (int)maxLength);
 
 	if(realLength < 0) {
 		*error = 1;
-		free(buf);
 		return NULL;
 	}
 
-	initid->ptr = buf;
 	*length = (unsigned long)realLength;
 
 	return buf;
